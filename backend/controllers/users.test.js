@@ -69,6 +69,35 @@ describe("signUp", () => {
     expect(res.json).toHaveBeenCalledWith({ user: created });
     expect(created.dataValues.token).toEqual(expect.any(String));
   });
+
+  // AC-092: registration is unaffected by a socialLinks value in the
+  // request body - socialLinks cannot be set at registration (REQ-051).
+  test("socialLinks present on the request body does not affect registration", async () => {
+    User.findOne.mockResolvedValue(null);
+    const created = makeInstance({ id: 1, username: "jane", email: "a@x.com" });
+    User.create.mockResolvedValue(created);
+    const res = makeRes();
+
+    await signUp(
+      {
+        body: {
+          user: {
+            username: "jane",
+            email: "a@x.com",
+            password: "pw",
+            socialLinks: [{ label: "GitHub", url: "https://github.com/jane" }],
+          },
+        },
+      },
+      res,
+      vi.fn(),
+    );
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(User.create).toHaveBeenCalledWith(
+      expect.not.objectContaining({ socialLinks: expect.anything() }),
+    );
+  });
 });
 
 describe("signIn", () => {

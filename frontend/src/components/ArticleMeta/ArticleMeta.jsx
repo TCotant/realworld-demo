@@ -3,12 +3,12 @@ import dateFormatter from "../../helpers/dateFormatter";
 import Avatar from "../Avatar";
 
 function ArticleMeta({ author, children, createdAt }) {
-  const { bio, followersCount, following, image, username } = author || {};
+  const { bio, followersCount, following, image, socialLinks, username } = author || {};
 
   return (
     <div className="article-meta">
       <Link
-        state={{ bio, followersCount, following, image }}
+        state={{ bio, followersCount, following, image, socialLinks }}
         to={`/profile/${username}`}
       >
         <Avatar alt={username} src={image} />
@@ -16,7 +16,7 @@ function ArticleMeta({ author, children, createdAt }) {
       <div className="info">
         <Link
           className="author"
-          state={{ bio, followersCount, following, image }}
+          state={{ bio, followersCount, following, image, socialLinks }}
           to={`/profile/${username}`}
         >
           {username}

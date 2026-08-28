@@ -72,4 +72,89 @@ describe("updateUser", () => {
     expect(loggedUser.password).not.toBe("original-hash");
     await expect(bcryptCompare("", loggedUser.password)).resolves.toBe(true);
   });
+
+  // AC-088: a submitted collection of non-empty-URL entries replaces the
+  // stored social links, normalized.
+  test("submitted socialLinks with non-empty urls -> stored, normalized", async () => {
+    const loggedUser = makeInstance(
+      { username: "jane", socialLinks: [] },
+      { save: vi.fn().mockResolvedValue() },
+    );
+    const req = {
+      loggedUser,
+      body: {
+        user: {
+          username: "jane",
+          password: "",
+          socialLinks: [{ label: "  GitHub  ", url: "  https://github.com/jane  " }],
+        },
+      },
+    };
+
+    await updateUser(req, makeRes(), vi.fn());
+
+    expect(loggedUser.socialLinks).toEqual([
+      { label: "GitHub", url: "https://github.com/jane" },
+    ]);
+  });
+
+  // AC-089: omitting socialLinks entirely leaves the existing value untouched.
+  test("socialLinks omitted -> existing value left unchanged", async () => {
+    const existing = [{ label: "GitHub", url: "https://github.com/jane" }];
+    const loggedUser = makeInstance(
+      { username: "jane", socialLinks: existing },
+      { save: vi.fn().mockResolvedValue() },
+    );
+    const req = { loggedUser, body: { user: { username: "jane", password: "" } } };
+
+    await updateUser(req, makeRes(), vi.fn());
+
+    expect(loggedUser.socialLinks).toBe(existing);
+  });
+
+  // AC-090: an explicitly empty collection clears all stored links.
+  test("socialLinks submitted as an empty array -> clears stored links", async () => {
+    const loggedUser = makeInstance(
+      { username: "jane", socialLinks: [{ label: "GitHub", url: "https://github.com/jane" }] },
+      { save: vi.fn().mockResolvedValue() },
+    );
+    const req = {
+      loggedUser,
+      body: { user: { username: "jane", password: "", socialLinks: [] } },
+    };
+
+    await updateUser(req, makeRes(), vi.fn());
+
+    expect(loggedUser.socialLinks).toEqual([]);
+  });
+
+  // AC-091: an entry with a blank/whitespace url is discarded; a valid
+  // entry alongside it is kept, with no error reported.
+  test("socialLinks with one blank-url entry and one valid entry -> only the valid one is stored", async () => {
+    const loggedUser = makeInstance(
+      { username: "jane", socialLinks: [] },
+      { save: vi.fn().mockResolvedValue() },
+    );
+    const req = {
+      loggedUser,
+      body: {
+        user: {
+          username: "jane",
+          password: "",
+          socialLinks: [
+            { label: "Blank", url: "   " },
+            { label: "GitHub", url: "https://github.com/jane" },
+          ],
+        },
+      },
+    };
+    const next = vi.fn();
+
+    await updateUser(req, makeRes(), next);
+
+    expect(loggedUser.socialLinks).toEqual([
+      { label: "GitHub", url: "https://github.com/jane" },
+    ]);
+    expect(next).not.toHaveBeenCalled();
+  });
 });

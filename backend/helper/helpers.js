@@ -2,6 +2,12 @@ const slugify = (string) => {
   return string.trim().toLowerCase().replace(/\W|_/g, "-");
 };
 
+const normalizeSocialLinks = (socialLinks) => {
+  return socialLinks
+    .map(({ label, url }) => ({ label: (label || "").trim(), url: (url || "").trim() }))
+    .filter(({ url }) => url.length > 0);
+};
+
 const appendTagList = (articleTags, article) => {
   const tagList = articleTags.map((tag) => tag.name);
 
@@ -39,4 +45,10 @@ const appendFollowers = async (loggedUser, toAppend) => {
   }
 };
 
-module.exports = { slugify, appendTagList, appendFavorites, appendFollowers };
+module.exports = {
+  slugify,
+  appendTagList,
+  appendFavorites,
+  appendFollowers,
+  normalizeSocialLinks,
+};

@@ -2,15 +2,15 @@ import Markdown from "markdown-to-jsx";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import isSafeUrl from "../../helpers/isSafeUrl";
 import getProfile from "../../services/getProfile";
 import Avatar from "../Avatar";
 import FollowButton from "../FollowButton";
 
 function AuthorInfo() {
   const { state } = useLocation();
-  const [{ bio, followersCount, following, image }, setAuthor] = useState(
-    state || {}
-  );
+  const [{ bio, followersCount, following, image, socialLinks = [] }, setAuthor] =
+    useState(state || {});
   const { headers, loggedUser } = useAuth();
   const { username } = useParams();
   const navigate = useNavigate();
@@ -36,6 +36,22 @@ function AuthorInfo() {
       <h4>{username}</h4>
 
       {bio && <Markdown options={{ forceBlock: true }}>{bio}</Markdown>}
+
+      {socialLinks.length > 0 && (
+        <ul className="social-links">
+          {socialLinks.map(({ label, url }, index) => (
+            <li key={index}>
+              {isSafeUrl(url) ? (
+                <a href={url} target="_blank" rel="noreferrer">
+                  {label || url}
+                </a>
+              ) : (
+                label || url
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {username === loggedUser.username ? (
         <Link

@@ -157,3 +157,26 @@ cleanly — no placeholder cluttering articles that don't have one, and no
 broken-image icon if a URL stops working — so that browsing stays
 visually tidy.
 *Related requirements: REQ-050*
+
+---
+
+**US-031** — As an authenticated user, I want to add, update, or remove
+the social/external links on my account by submitting the full set I
+want, so that I can point readers to where else I can be found without
+being restricted to a fixed list of platforms.
+*Related requirements: REQ-051*
+
+---
+
+**US-032** — As a visitor, I want an account's social links to appear on
+their public profile, with nothing shown when none are set, so that I can
+find an author elsewhere without clutter when they haven't provided any.
+*Related requirements: REQ-052*
+
+---
+
+**US-033** — As a visitor, I want a social link that uses a
+script-executing URL scheme to be shown as inert text rather than a
+clickable link, so that visiting a profile page can't run arbitrary
+script through a malicious "social link."
+*Related requirements: REQ-053*

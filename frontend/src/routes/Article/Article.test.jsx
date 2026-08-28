@@ -47,3 +47,78 @@ it("renders no image when the article has none", () => {
 
   expect(screen.queryByAltText("A Title")).not.toBeInTheDocument();
 });
+
+// AC-098/AC-100: table of contents presence follows from headings in the body.
+it("renders a table of contents and the wide column split when the body has headings", () => {
+  const { container } = renderArticle({
+    title: "A Title",
+    body: "# Heading One\n\nSome text.\n\n## Heading Two",
+    tagList: [],
+    createdAt: "2020-01-01T00:00:00.000Z",
+    author: { username: "jane", following: false, followersCount: 0 },
+  });
+
+  expect(screen.getByRole("navigation", { name: "Table of contents" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Heading One" })).toHaveAttribute("href", "#heading-one");
+  expect(screen.getByRole("link", { name: "Heading Two" })).toHaveAttribute("href", "#heading-two");
+  expect(container.querySelector(".col-md-9")).not.toBeNull();
+  expect(container.querySelector(".col-md-12")).toBeNull();
+});
+
+it("renders no table of contents and the full-width column when the body has no headings", () => {
+  const { container } = renderArticle({
+    title: "A Title",
+    body: "Just some text with no headings.",
+    tagList: [],
+    createdAt: "2020-01-01T00:00:00.000Z",
+    author: { username: "jane", following: false, followersCount: 0 },
+  });
+
+  expect(screen.queryByRole("navigation", { name: "Table of contents" })).not.toBeInTheDocument();
+  expect(container.querySelector(".col-md-12")).not.toBeNull();
+  expect(container.querySelector(".col-md-9")).toBeNull();
+});
+
+// AC-101: the table of contents reflects the same body content whether it
+// arrived via navigation state (REQ-043) or was fetched, without an extra request.
+it("derives the table of contents from state-supplied body without fetching", () => {
+  renderArticle({
+    title: "A Title",
+    body: "# Only Heading",
+    tagList: [],
+    createdAt: "2020-01-01T00:00:00.000Z",
+    author: { username: "jane", following: false, followersCount: 0 },
+  });
+
+  expect(screen.getByRole("link", { name: "Only Heading" })).toBeInTheDocument();
+});
+
+// AC-102: viewing an article again after its body was edited (headings
+// added, removed, or reordered) reflects the updated set and order.
+it("reflects an edited body's updated set and order of headings on a subsequent view", () => {
+  const { container: firstView, unmount } = renderArticle({
+    title: "A Title",
+    body: "# First\n\n## Second",
+    tagList: [],
+    createdAt: "2020-01-01T00:00:00.000Z",
+    author: { username: "jane", following: false, followersCount: 0 },
+  });
+
+  expect(
+    Array.from(firstView.querySelectorAll(".article-toc a")).map((link) => link.textContent),
+  ).toEqual(["First", "Second"]);
+
+  unmount();
+
+  const { container: secondView } = renderArticle({
+    title: "A Title",
+    body: "# Second\n\n## Third",
+    tagList: [],
+    createdAt: "2020-01-01T00:00:00.000Z",
+    author: { username: "jane", following: false, followersCount: 0 },
+  });
+
+  expect(
+    Array.from(secondView.querySelectorAll(".article-toc a")).map((link) => link.textContent),
+  ).toEqual(["Second", "Third"]);
+});

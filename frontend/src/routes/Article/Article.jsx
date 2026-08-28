@@ -1,12 +1,14 @@
 import Markdown from "markdown-to-jsx";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import ArticleImage from "../../components/ArticleImage";
 import ArticleMeta from "../../components/ArticleMeta";
 import ArticlesButtons from "../../components/ArticlesButtons";
+import ArticleTableOfContents from "../../components/ArticleTableOfContents";
 import ArticleTags from "../../components/ArticleTags";
 import BannerContainer from "../../components/BannerContainer";
 import { useAuth } from "../../context/AuthContext";
+import { extractHeadings, slugifyHeading } from "../../helpers/tableOfContents";
 import getArticle from "../../services/getArticle";
 
 function Article() {
@@ -16,6 +18,7 @@ function Article() {
   const { headers, isAuth } = useAuth();
   const navigate = useNavigate();
   const { slug } = useParams();
+  const headings = useMemo(() => extractHeadings(body), [body]);
 
   useEffect(() => {
     if (state) return;
@@ -40,10 +43,19 @@ function Article() {
 
       <div className="container page">
         <div className="row article-content">
-          <div className="col-md-12">
-            {body && <Markdown options={{ forceBlock: true }}>{body}</Markdown>}
+          <div className={headings.length ? "col-md-9" : "col-md-12"}>
+            {body && (
+              <Markdown options={{ forceBlock: true, slugify: slugifyHeading }}>
+                {body}
+              </Markdown>
+            )}
             <ArticleTags tagList={tagList} />
           </div>
+          {headings.length > 0 && (
+            <div className="col-md-3">
+              <ArticleTableOfContents headings={headings} />
+            </div>
+          )}
         </div>
 
         <hr />

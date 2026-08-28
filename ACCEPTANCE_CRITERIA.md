@@ -484,6 +484,45 @@ changed.
   clickable anchor exactly as REQ-052 describes — the check in AC-096
   does not extend to these cases.
 
+### US-034 — Table of contents for article headings
+*(REQ-054)*
+
+- **AC-098** — Given an article whose body contains one or more
+  headings, when its detail page is rendered, then a table of contents
+  listing those headings, in the order they appear in the body, is
+  displayed.
+- **AC-099** — Given the table of contents is displayed, when a reader
+  selects one of its entries, then the page scrolls to the exact heading
+  that entry names.
+- **AC-100** — Given an article whose body contains no headings, when
+  its detail page is rendered, then no table of contents — and no empty
+  placeholder — is displayed.
+- **AC-101** — Given the article detail page is opened via navigation
+  state versus opened by direct URL or reload (REQ-043), when its table
+  of contents is rendered in either case, then it reflects the same body
+  content without requiring any network request beyond what REQ-043
+  already specifies for that path.
+- **AC-102** — Given an author edits an article's body to add, remove,
+  or reorder headings, when the article is subsequently viewed again,
+  then the displayed table of contents reflects the updated set and
+  order of headings.
+
+### US-035 — Table of contents reflects known heading-detection boundaries
+*(REQ-054, REQ-055)*
+
+- **AC-103** — Given an article body containing a Setext-style heading (a
+  line of text followed by a line of `=` or `-` characters), when the
+  table of contents is displayed, then that heading does not appear in
+  it, even though it is rendered as a heading in the article body.
+- **AC-104** — Given an article body containing two headings with
+  identical text, when the table of contents is displayed, then
+  selecting either of their entries scrolls to whichever of the two
+  headings appears first in the body.
+- **AC-105** — Given an article body containing a heading nested inside
+  a blockquote or list item, when the table of contents is displayed,
+  then that heading does not appear in it, even though it is rendered as
+  a heading in the article body.
+
 ---
 
 ## Traceability Matrix
@@ -543,3 +582,5 @@ changed.
 | REQ-051 | US-031 | AC-088–AC-092 |
 | REQ-052 | US-032 | AC-093–AC-095 |
 | REQ-053 | US-033 | AC-096, AC-097 |
+| REQ-054 | US-034 | AC-098–AC-102 |
+| REQ-055 | US-035 | AC-103–AC-105 |

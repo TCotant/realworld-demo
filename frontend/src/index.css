@@ -26,3 +26,27 @@ button:focus {
   justify-content: center;
   flex-direction: column;
 }
+
+.article-toc ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.article-toc a {
+  display: block;
+  padding: 0.15rem 0;
+}
+
+.article-toc .toc-level-2 {
+  padding-left: 0.75rem;
+}
+
+.article-toc .toc-level-3 {
+  padding-left: 1.5rem;
+}
+
+.article-toc .toc-level-4,
+.article-toc .toc-level-5,
+.article-toc .toc-level-6 {
+  padding-left: 2.25rem;
+}

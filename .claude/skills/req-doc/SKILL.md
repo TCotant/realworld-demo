@@ -1,6 +1,6 @@
 ---
 name: req-doc
-description: Draft REQUIREMENTS.md/USER_STORIES.md/ACCEPTANCE_CRITERIA.md entries (REQ/US/AC, next unused numbers, cross-referenced) for a behavior change just made or described, following this repo's documentation contract and house style.
+description: Draft REQUIREMENTS.md/USER_STORIES.md/ACCEPTANCE_CRITERIA.md entries (REQ/US/AC, next unused numbers, cross-referenced) for a behavior change, following this repo's documentation contract and house style. Default timing is spec-first — draft the entries from the issue/description before implementation begins, then implement to match them.
 ---
 
 You draft new, numbered `REQ-###` / `US-###` / `AC-###` entries — plus the
@@ -28,45 +28,64 @@ Read, in order:
 3. `frontend/src/CLAUDE.md` if the change touches `frontend/src/`, and/or
    `test/CLAUDE.md` if you'll be reasoning about test coverage.
 
-## Step 1 — Determine what changed
+## Step 1 — Pick a timing mode
 
-Figure out the actual behavior to document, in this priority order:
-
-- **If invoked with an issue number** (e.g. `/req-doc #4`), run
-  `gh issue view <N>` and use its summary/user story/acceptance criteria
-  as source material.
-- **If invoked with free-text** (a description of the change), treat that
-  as the starting point.
-- **If invoked with no arguments**, run `git diff main...HEAD` and
-  `git log main..HEAD --oneline` to see what the current branch changed.
-
-In every case, **then read the actual touched source and its tests** —
-never draft an entry from the description or issue text alone. The
-description tells you *what to look for*; the code and tests are the only
-authority on what the behavior *actually is*, including edge cases,
-error-handling paths, and boundary conditions (this repo's `REQ-###`
-entries are full of exactly those — e.g. `REQ-017`'s falsy-vs-empty
-distinction, `REQ-020`'s untrimmed-length quirk). If you can't verify the
-described behavior against code/tests, stop and ask the user rather than
-inventing it — do not draft speculative requirements.
-
-## Step 2 — Pick a mode
-
-- **New behavior** — the diff/issue shows code that didn't exist before.
-  This is the normal case for an `ISSUES.md` ticket.
-- **Amendment** — you're documenting a special case in code that already
-  existed but was never captured in `REQUIREMENTS.md`. This is exactly
-  why the `## Amendments` section of `REQUIREMENTS.md` exists today
+- **Spec-first (default for new `ISSUES.md` tickets)** — run this skill
+  *before* writing any implementation code, straight from the issue/ticket
+  description (plus any scoping discussion or `PLAN.md` already agreed
+  with the user). The entries you draft here become the contract the
+  implementation is written to satisfy — this flips the historical
+  "document what the code already does" habit for brand-new features:
+  here, the doc is written first and the code follows it, the same way
+  `PLAN.md` itself is a spec written before the code that implements it.
+  Skip straight to Step 2 (Compute next numbers) in this mode; there is no existing code/tests to
+  read yet, so calibrate format and house style only from the *existing*
+  `REQ-###`/`US-###`/`AC-###` entries (Step "Before doing anything else"),
+  not from a diff.
+- **Post-hoc reconciliation** — run this after implementation, either
+  because (a) the feature was already built before this skill ran (e.g.
+  an older ticket, or a fix applied mid-implementation before the spec was
+  drafted), or (b) implementation surfaced a real special case or boundary
+  condition the spec-first draft didn't anticipate and the entries need a
+  follow-up amendment. In this mode, source material is the actual diff —
+  run `git diff main...HEAD` and `git log main..HEAD --oneline` (or read
+  the named files directly), and **read the touched source and its
+  tests** before drafting anything; never draft an entry from a
+  description alone here, since the whole point of this mode is
+  documenting what the code *actually* does, including the edge cases the
+  spec missed. This is also the mode for **amendments**: documenting a
+  special case in code that already existed but was never captured in
+  `REQUIREMENTS.md` — exactly why the `## Amendments` section exists today
   (`REQ-041`–`048` were "added after a documentation review found special
-  cases present in the code but not yet captured above"). Use this mode
-  for bugfix/incident-style tickets, or when you notice undocumented
-  existing behavior while working on something else.
+  cases present in the code but not yet captured above").
+- **If invoked with an issue number** (e.g. `/req-doc #4`) and no code for
+  it exists yet, run `gh issue view <N>` and treat that as spec-first
+  source material.
+- **If invoked with no arguments and implementation already exists** on
+  the current branch, fall back to post-hoc reconciliation against
+  `git diff main...HEAD`.
 
-Both modes produce the same shape of entry and go through the same steps
-below — the only difference is what you're reading to derive them (a diff
-of new code vs. an existing code path).
+Both timing modes produce the same shape of entry and go through the same
+steps below — the difference is only what you read to derive them (the
+issue/description vs. an existing diff) and whether you're allowed to
+draft ahead of verified code (spec-first only).
 
-## Step 3 — Compute next numbers
+## Step 1a — After a spec-first draft, close the loop
+
+Spec-first entries describe *intended* behavior. Once the implementation
+this spec was written for is actually done, re-read the real code/tests
+against the drafted entries before calling the ticket finished:
+
+- If the implementation matches the draft, nothing further to do.
+- If implementation had to diverge from the draft in some way (a detail
+  the spec didn't anticipate, a boundary case discovered while coding),
+  do **not** silently edit the spec-first entry to match after the fact —
+  run this skill again in post-hoc reconciliation mode to add an
+  `## Amendments` entry capturing the discovered special case, the same
+  way undocumented legacy behavior gets amended. The original entry stays
+  as-is; the amendment supersedes it for that specific case.
+
+## Step 2 — Compute next numbers
 
 For each file, find the highest existing number and add 1:
 
@@ -79,9 +98,9 @@ grep -oE 'AC-[0-9]+'  ACCEPTANCE_CRITERIA.md | grep -oE '[0-9]+' | sort -n | tai
 Never reuse or renumber an existing entry. **Always append** — this file's
 own stated policy is "Numbering is appended rather than interleaved so
 that the original numbering is preserved unchanged," and that rule holds
-regardless of which mode (Step 2) produced the entry.
+regardless of which timing mode (Step 1) produced the entry.
 
-## Step 4 — Draft the REQ entry
+## Step 3 — Draft the REQ entry
 
 - Observable behavior only — no implementation detail (no variable names,
   no internal function names). State what the system *does*, the way
@@ -93,7 +112,7 @@ regardless of which mode (Step 2) produced the entry.
   `REQUIREMENTS.md` (create that heading only if a future repo state
   somehow lacks it — today it exists, after `REQ-040`).
 
-## Step 5 — Draft the US entry
+## Step 4 — Draft the US entry
 
 Format, matching every existing entry in `USER_STORIES.md`:
 
@@ -104,7 +123,7 @@ Format, matching every existing entry in `USER_STORIES.md`:
 
 Append to the end of `USER_STORIES.md`.
 
-## Step 6 — Draft the AC entries and the traceability row
+## Step 5 — Draft the AC entries and the traceability row
 
 In `ACCEPTANCE_CRITERIA.md`, append:
 
@@ -135,7 +154,7 @@ reference — read them directly before drafting anything new:
 Match that formatting exactly — heading style, em-dash usage, bullet
 structure, cross-reference syntax.
 
-## Step 7 — Apply and stop
+## Step 6 — Apply and stop
 
 Apply the drafted entries with `Edit`. Then run `git diff` over the three
 files and show it to the user. **Do not** run `git add`, `git commit`, or
@@ -146,7 +165,13 @@ opening a PR is `GITHUB.md`'s job, not this skill's.
 
 - Never edit or renumber any existing `REQ-###`/`US-###`/`AC-###` entry or
   Traceability Matrix row.
-- Never document behavior you haven't verified in the actual code/tests.
+- In post-hoc reconciliation mode, never document behavior you haven't
+  verified in the actual code/tests. In spec-first mode, you have no code
+  to verify against yet — but never draft a spec that contradicts an
+  *existing* `REQ-###`/`US-###`/`AC-###` entry or a stated scope decision
+  in `PLAN.md`/the issue; if the two conflict, stop and ask rather than
+  guessing which one wins. Either way, run Step 1a once implementation
+  exists so the doc and the code end up saying the same thing.
 - Never touch `ISSUES.md`, run the test suite, or perform any git
   operation beyond read-only inspection (`git diff`, `git log`).
 - If the change spans multiple distinct behaviors, draft one `REQ-###` per

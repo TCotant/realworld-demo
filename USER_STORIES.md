@@ -180,3 +180,18 @@ script-executing URL scheme to be shown as inert text rather than a
 clickable link, so that visiting a profile page can't run arbitrary
 script through a malicious "social link."
 *Related requirements: REQ-053*
+
+---
+
+**US-034** — As a reader, I want a table of contents for an article's
+headings, so that I can quickly jump to the section I'm interested in
+without scrolling through the whole article.
+*Related requirements: REQ-054*
+
+---
+
+**US-035** — As a reader, I want the table of contents to reliably
+reflect the headings my article body actually renders, so that I don't
+miss content the table of contents silently left out, or get confused by
+an entry that doesn't correspond to a real heading.
+*Related requirements: REQ-054, REQ-055*

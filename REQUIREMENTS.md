@@ -485,3 +485,50 @@ link exactly as REQ-052 describes. No equivalent check applies to the
 article cover-image URL (REQ-049, REQ-050), which is rendered via an
 `img` element rather than a hyperlink, where these schemes are already
 inert in current browsers.
+
+---
+
+### REQ-054 — Article detail page displays a table of contents derived from body headings
+When an article's body contains one or more Markdown headings, the
+article detail page displays a table of contents listing each heading, in
+the order it appears in the body. Selecting a table-of-contents entry
+scrolls the page to the corresponding heading; an entry always scrolls to
+the exact heading it names, never to the wrong heading or to no heading
+at all. This is additive: it does not change how the article body's
+non-heading Markdown content (paragraphs, code blocks, lists, etc.) is
+rendered.
+
+**Boundary:** an article whose body contains no headings displays no
+table of contents — no empty container and no error is shown in its
+place.
+
+**Boundary:** the table of contents is derived from whichever article
+body is already present on the page — supplied via client-side
+navigation state or fetched from the server (REQ-043) — so it reflects
+the current body content without requiring or triggering any additional
+network request beyond what REQ-043 already specifies, and reflects
+edits to the body (added, removed, or reordered headings) the next time
+the article is viewed.
+
+### REQ-055 — Table-of-contents heading detection has documented scope boundaries
+The table of contents (REQ-054) is derived by scanning the article body's
+raw Markdown text for heading lines, rather than by inspecting how the
+body is actually rendered. This has the following known boundaries:
+
+- Only ATX-style headings (a line beginning with one to six `#`
+  characters) are detected. A Setext-style heading (a line of text
+  followed by a line of `=` or `-` characters) is rendered as a real
+  heading in the article body but does not appear in the table of
+  contents.
+- Two headings with identical text produce identical link targets,
+  matching the underlying Markdown renderer's own lack of duplicate-
+  heading handling; selecting either table-of-contents entry for such a
+  pair scrolls to whichever of the two headings appears first in the
+  body.
+- A heading nested inside a blockquote or list item is rendered as a real
+  heading in the article body but is not detected by this line-by-line
+  scan, and so does not appear in the table of contents.
+
+None of the above affects a heading written in ATX form at the top level
+of the body, outside any blockquote or list item, which is the common
+case.

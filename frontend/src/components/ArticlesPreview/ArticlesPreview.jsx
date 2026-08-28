@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ArticleImage from "../ArticleImage";
 import ArticleMeta from "../ArticleMeta";
 import ArticleTags from "../ArticleTags";
 import FavButton from "../FavButton";
@@ -18,6 +19,11 @@ function ArticlesPreview({ articles, loading, updateArticles }) {
     articles.map((article) => {
       return (
         <div className="article-preview" key={article.slug}>
+          <ArticleImage
+            alt={article.title}
+            className="article-preview-image"
+            src={article.image}
+          />
           <ArticleMeta author={article.author} createdAt={article.createdAt}>
             <FavButton
               favorited={article.favorited}

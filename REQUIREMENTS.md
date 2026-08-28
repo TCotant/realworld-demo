@@ -405,3 +405,28 @@ tools are not added to any auto-approval allowlist in
 `.claude/settings.json`, so the first use of the server in a session
 requires the normal Claude Code permission prompt rather than running
 unattended.
+
+---
+
+### REQ-049 — Article cover image is optional and independently editable
+An article may carry an optional cover image: a free-text URL string with
+no format or reachability validation, front or back end. Creating an
+article accepts an optional `image` value; if it is omitted or an empty
+string, the article is created with no cover image. Any article
+representation returned by the API (creation response, single article,
+article list, personalized feed) includes the article's current cover
+image value.
+
+**Special case:** updating an article's cover image distinguishes an
+omitted `image` field from an explicitly empty one — unlike the
+truthy-only pattern used for `description`/`body` (REQ-017). Omitting
+`image` from an update leaves the existing cover image unchanged;
+submitting `image` as an empty string clears it; submitting any other
+non-empty value replaces it.
+
+### REQ-050 — Cover image display has no placeholder and hides on load failure
+When an article has a cover image, it is displayed in article list
+previews and on the article's detail page. Unlike user avatars (REQ-033),
+no placeholder image is substituted when an article has no cover image —
+nothing is displayed in its place. If a displayed cover image's URL fails
+to load, it is hidden from view rather than showing a broken-image icon.

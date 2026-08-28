@@ -155,6 +155,63 @@ describe("createArticle", () => {
     expect(created.addTagList).toHaveBeenCalledTimes(2);
     expect(res.status).toHaveBeenCalledWith(201);
   });
+
+  // Article cover image: an image submitted at creation is passed straight
+  // through to Article.create, alongside the existing fields.
+  test("image in request body -> passed through to Article.create", async () => {
+    Article.findOne.mockResolvedValue(null);
+    Article.create.mockResolvedValue(makeArticle({ author: loggedUser }));
+
+    await createArticle(
+      {
+        loggedUser,
+        body: {
+          article: { title: "T", description: "d", body: "b", image: "https://example.com/cover.png" },
+        },
+      },
+      makeRes(),
+      vi.fn(),
+    );
+
+    expect(Article.create).toHaveBeenCalledWith(
+      expect.objectContaining({ image: "https://example.com/cover.png" }),
+    );
+  });
+
+  // No image submitted: creation still succeeds (image is not a required
+  // field - REQ-015 is unaffected) and is stored as null, consistent with
+  // the migration's column default and with updateArticle's "" -> null
+  // normalization.
+  test("no image -> article still created, required-field validation unaffected", async () => {
+    Article.findOne.mockResolvedValue(null);
+    Article.create.mockResolvedValue(makeArticle({ author: loggedUser }));
+    const res = makeRes();
+
+    await createArticle(
+      { loggedUser, body: { article: { title: "T", description: "d", body: "b", tagList: [] } } },
+      res,
+      vi.fn(),
+    );
+
+    expect(Article.create).toHaveBeenCalledWith(expect.objectContaining({ image: null }));
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
+  // image: "" (what the app's own editor form always sends for "no cover
+  // image") is likewise normalized to null on creation, not stored as an
+  // empty string.
+  test("image: '' on creation -> stored as null", async () => {
+    Article.findOne.mockResolvedValue(null);
+    Article.create.mockResolvedValue(makeArticle({ author: loggedUser }));
+
+    await createArticle(
+      { loggedUser, body: { article: { title: "T", description: "d", body: "b", tagList: [], image: "" } } },
+      makeRes(),
+      vi.fn(),
+    );
+
+    expect(Article.create).toHaveBeenCalledWith(expect.objectContaining({ image: null }));
+  });
 });
 
 describe("updateArticle", () => {
@@ -235,6 +292,57 @@ describe("updateArticle", () => {
 
     expect(article.description).toBe("original description");
     expect(article.body).toBe("original body");
+  });
+
+  // Article cover image: omitting the `image` key entirely leaves the
+  // existing image unchanged - unlike description/body's truthy-only check,
+  // this distinguishes "not submitted" from "submitted as empty".
+  test("no image key on update -> existing image preserved", async () => {
+    const author = makeFollowableUser();
+    const article = makeArticle({ author, image: "https://example.com/original.png" });
+    Article.findOne.mockResolvedValue(article);
+
+    await updateArticle(
+      { loggedUser: author, params: { slug: "a-slug" }, body: { article: { title: "New" } } },
+      makeRes(),
+      vi.fn(),
+    );
+
+    expect(article.image).toBe("https://example.com/original.png");
+  });
+
+  // image: "" is an explicit clear, normalized to null.
+  test("image: '' on update -> image cleared to null", async () => {
+    const author = makeFollowableUser();
+    const article = makeArticle({ author, image: "https://example.com/original.png" });
+    Article.findOne.mockResolvedValue(article);
+
+    await updateArticle(
+      { loggedUser: author, params: { slug: "a-slug" }, body: { article: { image: "" } } },
+      makeRes(),
+      vi.fn(),
+    );
+
+    expect(article.image).toBe(null);
+  });
+
+  // A new, non-empty image value replaces the existing one.
+  test("new image value on update -> image replaced", async () => {
+    const author = makeFollowableUser();
+    const article = makeArticle({ author, image: "https://example.com/original.png" });
+    Article.findOne.mockResolvedValue(article);
+
+    await updateArticle(
+      {
+        loggedUser: author,
+        params: { slug: "a-slug" },
+        body: { article: { image: "https://example.com/new.png" } },
+      },
+      makeRes(),
+      vi.fn(),
+    );
+
+    expect(article.image).toBe("https://example.com/new.png");
   });
 });
 

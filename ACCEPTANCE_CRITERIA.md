@@ -404,6 +404,36 @@ changed.
   use of the server in a session requires an interactive permission
   prompt.
 
+### US-029 — Add, update, or remove an article's cover image
+*(REQ-049)*
+
+- **AC-080** — Given an authenticated user creating an article with an
+  `image` value, when submitted, then the created article's representation
+  includes that image.
+- **AC-081** — Given an authenticated user creating an article with no
+  `image` (or an empty `image`), when submitted, then the article is
+  created successfully with no cover image, and required-field validation
+  for `title`/`description`/`body` is unaffected.
+- **AC-082** — Given the article's author submits an update with no
+  `image` key, when saved, then the existing cover image is left
+  unchanged.
+- **AC-083** — Given the article's author submits an update with `image`
+  as an empty string, when saved, then the cover image is cleared.
+- **AC-084** — Given the article's author submits an update with a new,
+  non-empty `image` value, when saved, then the cover image is replaced
+  with that value.
+
+### US-030 — Cover image display without a placeholder or broken-image icon
+*(REQ-050)*
+
+- **AC-085** — Given an article with a cover image set, when its preview
+  or detail page is rendered, then the cover image is displayed.
+- **AC-086** — Given an article with no cover image, when its preview or
+  detail page is rendered, then no image — and no placeholder — is shown
+  in its place.
+- **AC-087** — Given a displayed cover image whose URL fails to load, when
+  the load error occurs, then the image is hidden from view.
+
 ---
 
 ## Traceability Matrix
@@ -458,3 +488,5 @@ changed.
 | REQ-046 | US-027 | AC-074, AC-075 |
 | REQ-047 | US-028 | AC-076, AC-077 |
 | REQ-048 | US-028 | AC-078, AC-079 |
+| REQ-049 | US-029 | AC-080–AC-084 |
+| REQ-050 | US-030 | AC-085–AC-087 |

@@ -434,6 +434,56 @@ changed.
 - **AC-087** — Given a displayed cover image whose URL fails to load, when
   the load error occurs, then the image is hidden from view.
 
+### US-031 — Add, update, or remove profile social links
+*(REQ-051)*
+
+- **AC-088** — Given an authenticated user submitting a profile update
+  with a social-links collection containing one or more entries with
+  non-empty URLs, when saved, then the account's stored social links are
+  replaced with exactly those (normalized) entries.
+- **AC-089** — Given an authenticated user submitting a profile update
+  with no social-links field at all, when saved, then the account's
+  existing social links are left unchanged.
+- **AC-090** — Given an authenticated user submitting a profile update
+  with an empty social-links collection, when saved, then all previously
+  stored social links are cleared.
+- **AC-091** — Given an authenticated user submitting a social-links
+  collection where one entry's URL is blank or whitespace-only and
+  another entry has a non-empty URL, when saved, then the blank entry is
+  discarded and the other entry is stored, with no error reported for the
+  discarded entry.
+- **AC-092** — Given a new account registration submitted with no social
+  links, when the account is created, then registration succeeds exactly
+  as before (REQ-006) and the account has no stored social links.
+
+### US-032 — View profile social links
+*(REQ-052)*
+
+- **AC-093** — Given an account with one or more social links set, when
+  its public profile page is rendered, then each link is displayed as a
+  clickable hyperlink to its URL, for anonymous and authenticated viewers
+  alike.
+- **AC-094** — Given an account with no social links set, when its public
+  profile page is rendered, then no links section or placeholder is shown
+  in its place.
+- **AC-095** — Given a social link that was submitted with a label, when
+  displayed, then the label is used as the link's visible text; given one
+  submitted with no label, when displayed, then the URL itself is used as
+  the visible text.
+
+### US-033 — Social links using unsafe URL schemes are inert
+*(REQ-053)*
+
+- **AC-096** — Given a social link whose URL, after trimming, begins with
+  `javascript:`, `data:`, or `vbscript:` (case-insensitively), when the
+  profile page renders it, then the link's label (or URL) is displayed as
+  plain text, not as a clickable anchor.
+- **AC-097** — Given a social link whose URL has no scheme (a bare
+  domain) or uses `http`/`https` and is otherwise dead or unreachable,
+  when the profile page renders it, then it is still rendered as a
+  clickable anchor exactly as REQ-052 describes — the check in AC-096
+  does not extend to these cases.
+
 ---
 
 ## Traceability Matrix
@@ -490,3 +540,6 @@ changed.
 | REQ-048 | US-028 | AC-078, AC-079 |
 | REQ-049 | US-029 | AC-080–AC-084 |
 | REQ-050 | US-030 | AC-085–AC-087 |
+| REQ-051 | US-031 | AC-088–AC-092 |
+| REQ-052 | US-032 | AC-093–AC-095 |
+| REQ-053 | US-033 | AC-096, AC-097 |

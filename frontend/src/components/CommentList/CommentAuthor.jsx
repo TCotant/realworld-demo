@@ -1,19 +1,19 @@
 import { Link } from "react-router-dom";
 import Avatar from "../Avatar";
 
-function CommentAuthor({ bio, followersCount, following, image, username }) {
+function CommentAuthor({ bio, followersCount, following, image, socialLinks, username }) {
   return (
     <>
       <Link
         className="comment-author"
-        state={{ bio, followersCount, following, image }}
+        state={{ bio, followersCount, following, image, socialLinks }}
         to={`/profile/${username}`}
       >
         <Avatar alt={username} className="comment-author-img" src={image} />
       </Link>{" "}
       <Link
         className="comment-author"
-        state={{ bio, followersCount, following, image }}
+        state={{ bio, followersCount, following, image, socialLinks }}
         to={`/profile/${username}`}
       >
         {username}

@@ -3,14 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import userUpdate from "../../services/userUpdate";
 import FormFieldset from "../FormFieldset";
+import SocialLinksFieldset from "../SocialLinksFieldset";
 
 function SettingsForm() {
   const { headers, isAuth, loggedUser, setAuthState } = useAuth();
-  const [{ bio, email, image, password, username }, setForm] = useState({
+  const [{ bio, email, image, password, socialLinks, username }, setForm] = useState({
     bio: loggedUser.bio || "",
     email: loggedUser.email,
     image: loggedUser.image || "",
     password: loggedUser.password || "",
+    socialLinks: loggedUser.socialLinks || [],
     username: loggedUser.username,
   });
 
@@ -29,12 +31,17 @@ function SettingsForm() {
     setInactive(false);
   };
 
+  const socialLinksHandler = (socialLinks) => {
+    setForm((form) => ({ ...form, socialLinks }));
+    setInactive(false);
+  };
+
   const formSubmit = async (e) => {
     e.preventDefault();
 
     if (inactive) return;
 
-    userUpdate({ headers, bio, email, image, password, username })
+    userUpdate({ headers, bio, email, image, password, socialLinks, username })
       .then(setAuthState)
       .catch(console.error);
     setInactive(true);
@@ -85,6 +92,8 @@ function SettingsForm() {
             placeholder="Password"
             handler={inputHandler}
           ></FormFieldset>
+
+          <SocialLinksFieldset links={socialLinks} onChange={socialLinksHandler} />
 
           {!inactive && (
             <button

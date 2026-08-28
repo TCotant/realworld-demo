@@ -430,3 +430,58 @@ previews and on the article's detail page. Unlike user avatars (REQ-033),
 no placeholder image is substituted when an article has no cover image —
 nothing is displayed in its place. If a displayed cover image's URL fails
 to load, it is hidden from view rather than showing a broken-image icon.
+
+### REQ-051 — Profile social links are optional and updated as a whole collection
+A user account may carry zero or more social/external links, each
+consisting of a free-text label and a free-text URL, with no format or
+reachability validation, front or back end. An account with none set has
+no social links in its representation.
+
+**Special case:** unlike the per-field update pattern used for
+`username`/`email`/`bio`/`image` (REQ-011), where each named field's
+presence in the request is judged independently of the others, social
+links are updated as a single collection rather than as independent
+fields. Omitting the social-links field from a profile update leaves the
+existing stored links unchanged, matching REQ-011's field-level rule at
+that outer level — but when the field **is** present, the entire
+collection is replaced rather than merged: submitted entries are
+normalized by trimming, any entry whose URL is blank or whitespace-only
+after trimming is discarded, and the resulting list (which may be empty,
+clearing all links) becomes the new stored value in full. Changing or
+removing one link therefore requires resubmitting the entire desired set,
+not just the changed entry — there is no per-link update or delete
+independent of the others. Social links cannot be set at account
+registration; they are only settable via the existing account-update
+endpoint (REQ-010).
+
+### REQ-052 — Social links display on the public profile with no placeholder
+When a user account has one or more social links, they are displayed on
+that account's public profile page, visible to anonymous and
+authenticated visitors alike (consistent with REQ-001's pattern for other
+read access). Each link is rendered as a hyperlink to its URL, using its
+label as the link text when a label was provided, or the URL itself when
+none was given. Unlike user avatars (REQ-033), no placeholder is
+substituted when an account has no social links — nothing is displayed
+in its place. Social links are not displayed anywhere else in the client
+(e.g., not on article or comment author bylines). Because links render as
+plain hyperlinks rather than images, there is no load-failure handling
+analogous to REQ-050's cover-image hide-on-error behavior — a link to an
+invalid or unreachable URL still renders and is clickable exactly like
+any other link.
+
+### REQ-053 — Social link URLs using a script-executing scheme render as inert text
+A social link (REQ-051, REQ-052) whose URL, after trimming leading
+whitespace, begins with a script-executing scheme — `javascript:`,
+`data:`, or `vbscript:`, matched case-insensitively — is displayed as
+plain, non-clickable text (its label if one was given, otherwise the URL
+itself) instead of a hyperlink, unlike REQ-052's general rule that a
+social link "renders... clickable exactly like any other link"
+regardless of validity. This check exists only to prevent a stored URL
+from executing script in the page's origin when clicked; it is not a
+general format or reachability check, and does not extend to a
+bare-domain URL with no scheme, or to an otherwise dead or unreachable
+`http`/`https` URL, both of which still render as an ordinary clickable
+link exactly as REQ-052 describes. No equivalent check applies to the
+article cover-image URL (REQ-049, REQ-050), which is rendered via an
+`img` element rather than a hyperlink, where these schemes are already
+inert in current browsers.
